@@ -83,6 +83,14 @@ jobs:
           name: "Cookie Selector ${{ github.ref_name }}"
           body: |
             ${{ steps.get_release_notes.outputs.release_notes }}
+
+            ---
+
+            📅 **Release Date:** ${{ github.event.head_commit.timestamp }}
+
+            🔄 **What's Changed**
+            **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_tag.outputs.previous_tag }}...${{ github.ref_name }}
+
           draft: false
           prerelease: false
           files: |
