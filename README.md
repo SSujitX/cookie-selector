@@ -1,7 +1,7 @@
 # Cookie Selector - Chrome Extension for Cookie Management
 
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green?style=flat&logo=google-chrome)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?logo=javascript)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-red?logo=google-chrome)
