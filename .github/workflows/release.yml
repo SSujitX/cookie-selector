@@ -1,0 +1,127 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          version="${{ github.ref_name }}"
+          version="${version#v}"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "Version: $version"
+
+      - name: Get previous tag
+        id: get_previous_tag
+        run: |
+          git fetch --tags
+          current_tag="${{ github.ref_name }}"
+          previous_tag=$(git tag --sort=-version:refname | grep -v "^$current_tag$" | head -n1)
+          if [ -n "$previous_tag" ]; then
+            echo "previous_tag=$previous_tag" >> $GITHUB_OUTPUT
+            echo "Previous tag: $previous_tag"
+          else
+            echo "previous_tag=" >> $GITHUB_OUTPUT
+            echo "No previous tag found"
+          fi
+
+      - name: Create extension package
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+
+          # Create a clean directory for the extension
+          mkdir -p extension-package
+
+          # Copy all extension files except unwanted ones
+          cp -r * extension-package/ 2>/dev/null || true
+
+          # Remove unwanted files and directories from the package
+          cd extension-package
+          rm -rf .git .github .gitignore node_modules .vscode *.md
+
+          # Create the zip file
+          cd ..
+          zip -r "cookie-selector-v$version.zip" extension-package/
+
+          echo "Created package: cookie-selector-v$version.zip"
+          ls -la cookie-selector-v$version.zip
+
+      - name: Generate release notes
+        id: get_release_notes
+        run: |
+          version="${{ steps.get_version.outputs.version }}"
+
+          cat << 'EOF' > release_notes.md
+          ## 🍪 Cookie Selector Browser Extension
+
+          A powerful Chrome extension for viewing, selecting, and exporting cookies from your current tab.
+
+          ### ✨ Features
+          - View all cookies for the current tab
+          - Select and copy specific cookies
+          - Export cookies as JSON files
+          - Clean and intuitive interface
+          - Developer-friendly cookie management
+
+          ### 📦 Installation
+          1. Download the `cookie-selector-v$version.zip` file below
+          2. Extract the zip file
+          3. Open Chrome and go to `chrome://extensions/`
+          4. Enable "Developer mode" in the top right
+          5. Click "Load unpacked" and select the extracted folder
+          6. The Cookie Selector extension is now ready to use!
+
+          ### 🚀 Usage
+          - Click the Cookie Selector icon in your browser toolbar
+          - View cookies for the current tab
+          - Select cookies to copy or export
+          - Export selected cookies as JSON files
+
+          ### 🔧 For Developers
+          Perfect for web developers and testers who need quick access to cookie data for debugging and testing purposes.
+          EOF
+
+          # Read the content and set it as output
+          {
+            echo 'release_notes<<EOF'
+            cat release_notes.md
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Cookie Selector ${{ github.ref_name }}"
+          body: |
+            ${{ steps.get_release_notes.outputs.release_notes }}
+
+            ---
+
+            **📋 Version:** ${{ steps.get_version.outputs.version }}
+            **📅 Release Date:** ${{ github.event.head_commit.timestamp }}
+
+            ### 🔄 What's Changed
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_tag.outputs.previous_tag }}...${{ github.ref_name }}
+
+          draft: false
+          prerelease: false
+          files: |
+            cookie-selector-v${{ steps.get_version.outputs.version }}.zip
+          fail_on_unmatched_files: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
