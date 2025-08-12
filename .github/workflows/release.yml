@@ -42,19 +42,14 @@ jobs:
         run: |
           version="${{ steps.get_version.outputs.version }}"
 
-          # Create a clean directory for the extension
-          mkdir -p extension-package
-
-          # Copy all extension files except unwanted ones
-          cp -r * extension-package/ 2>/dev/null || true
-
-          # Remove unwanted files and directories from the package
-          cd extension-package
-          rm -rf .git .github .gitignore node_modules .vscode *.md
-
-          # Create the zip file
-          cd ..
-          zip -r "cookie-selector-v$version.zip" extension-package/
+          # Check if cookie-selector folder exists
+          if [ -d "cookie-selector" ]; then
+            # Zip only the cookie-selector folder
+            zip -r "cookie-selector-v$version.zip" cookie-selector/
+          else
+            echo "Error: cookie-selector folder not found!"
+            exit 1
+          fi
 
           echo "Created package: cookie-selector-v$version.zip"
           ls -la cookie-selector-v$version.zip
@@ -65,33 +60,13 @@ jobs:
           version="${{ steps.get_version.outputs.version }}"
 
           cat << 'EOF' > release_notes.md
-          ## 🍪 Cookie Selector Browser Extension
+          Chrome extension for viewing, selecting, and exporting cookies from your current tab.
 
-          A powerful Chrome extension for viewing, selecting, and exporting cookies from your current tab.
-
-          ### ✨ Features
-          - View all cookies for the current tab
-          - Select and copy specific cookies
-          - Export cookies as JSON files
-          - Clean and intuitive interface
-          - Developer-friendly cookie management
-
-          ### 📦 Installation
-          1. Download the `cookie-selector-v$version.zip` file below
-          2. Extract the zip file
-          3. Open Chrome and go to `chrome://extensions/`
-          4. Enable "Developer mode" in the top right
-          5. Click "Load unpacked" and select the extracted folder
-          6. The Cookie Selector extension is now ready to use!
-
-          ### 🚀 Usage
-          - Click the Cookie Selector icon in your browser toolbar
-          - View cookies for the current tab
-          - Select cookies to copy or export
-          - Export selected cookies as JSON files
-
-          ### 🔧 For Developers
-          Perfect for web developers and testers who need quick access to cookie data for debugging and testing purposes.
+          **Installation:**
+          1. Download and extract the zip file
+          2. Go to `chrome://extensions/`
+          3. Enable "Developer mode"
+          4. Click "Load unpacked" and select the extracted folder
           EOF
 
           # Read the content and set it as output
@@ -108,15 +83,6 @@ jobs:
           name: "Cookie Selector ${{ github.ref_name }}"
           body: |
             ${{ steps.get_release_notes.outputs.release_notes }}
-
-            ---
-
-            **📋 Version:** ${{ steps.get_version.outputs.version }}
-            **📅 Release Date:** ${{ github.event.head_commit.timestamp }}
-
-            ### 🔄 What's Changed
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.get_previous_tag.outputs.previous_tag }}...${{ github.ref_name }}
-
           draft: false
           prerelease: false
           files: |
