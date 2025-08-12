@@ -2,9 +2,9 @@
   "manifest_version": 3,
   "name": "Cookie Selector",
   "version": "1.0.0",
-  "description": "Professional cookie management extension for web developers. View, select, and export website cookies with advanced filtering and multiple format support.",
+  "description": "Chrome extension to view, select, and copy cookies for the current tab. Useful for developers and testers.",
   "author": "Cookie Selector",
-  "homepage_url": "https://github.com/cookie-selector",
+  "homepage_url": "https://github.com/SSujitX/cookie-selector",
   "permissions": ["cookies", "activeTab", "downloads"],
   "host_permissions": ["<all_urls>"],
   "action": {
